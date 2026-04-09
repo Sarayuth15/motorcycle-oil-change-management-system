@@ -1,0 +1,16 @@
+### For backend
+# Database
+DB_USERNAME=root
+DB_PASSWORD=yuthMySQL$$168
+
+# Email
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=sarayuthcoding@gmail.com
+MAIL_PASSWORD=bubfapmzwjqkqbag
+
+# CORS - set to your frontend URL in production
+CORS_ORIGINS=http://localhost:3000
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8080
