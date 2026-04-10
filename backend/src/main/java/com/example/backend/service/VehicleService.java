@@ -1,6 +1,10 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.VehicleDto;
+import com.example.backend.dto.req.AcknowledgeServiceRequest;
+import com.example.backend.dto.req.CreateVehicleRequest;
+import com.example.backend.dto.req.UpdateKilometersRequest;
+import com.example.backend.dto.req.UpdateVehicleRequest;
+import com.example.backend.dto.res.VehicleResponse;
 import com.example.backend.enums.NotificationStatus;
 import com.example.backend.model.Vehicle;
 import com.example.backend.repository.VehicleRepository;
@@ -26,9 +30,8 @@ public class VehicleService {
     private double serviceIntervalKm;
 
     // ─── Create ───────────────────────────────────────────────────────────────
-
     @Transactional
-    public VehicleDto.Response createVehicle(VehicleDto.CreateRequest request) {
+    public VehicleResponse createVehicle(CreateVehicleRequest request) {
         double nextService = request.getCurrentKilometers() + serviceIntervalKm;
 
         Vehicle vehicle = Vehicle.builder()
@@ -49,32 +52,30 @@ public class VehicleService {
         log.info("Vehicle '{}' registered for {}. Next service at {} km.",
                 vehicle.getVehicleName(), vehicle.getOwnerEmail(), nextService);
 
-        return VehicleDto.Response.fromEntity(vehicle);
+        return VehicleResponse.fromEntity(vehicle);
     }
 
     // ─── Read ─────────────────────────────────────────────────────────────────
-
-    public List<VehicleDto.Response> getAllVehicles() {
+    public List<VehicleResponse> getAllVehicles() {
         return vehicleRepository.findAll().stream()
-                .map(VehicleDto.Response::fromEntity)
+                .map(VehicleResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    public VehicleDto.Response getVehicleById(Long id) {
+    public VehicleResponse getVehicleById(Long id) {
         Vehicle vehicle = findOrThrow(id);
-        return VehicleDto.Response.fromEntity(vehicle);
+        return VehicleResponse.fromEntity(vehicle);
     }
 
-    public List<VehicleDto.Response> getVehiclesByEmail(String email) {
+    public List<VehicleResponse> getVehiclesByEmail(String email) {
         return vehicleRepository.findByOwnerEmail(email).stream()
-                .map(VehicleDto.Response::fromEntity)
+                .map(VehicleResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     // ─── Update Kilometers ────────────────────────────────────────────────────
-
     @Transactional
-    public VehicleDto.Response updateKilometers(Long id, VehicleDto.UpdateKilometersRequest request) {
+    public VehicleResponse updateKilometers(Long id, UpdateKilometersRequest request) {
         Vehicle vehicle = findOrThrow(id);
         vehicle.setCurrentKilometers(request.getCurrentKilometers());
 
@@ -92,13 +93,12 @@ public class VehicleService {
             sendNotificationAndMark(vehicle);
         }
 
-        return VehicleDto.Response.fromEntity(vehicle);
+        return VehicleResponse.fromEntity(vehicle);
     }
 
     // ─── Update Vehicle Info ──────────────────────────────────────────────────
-
     @Transactional
-    public VehicleDto.Response updateVehicle(Long id, VehicleDto.UpdateVehicleRequest request) {
+    public VehicleResponse updateVehicle(Long id, UpdateVehicleRequest request) {
         Vehicle vehicle = findOrThrow(id);
 
         if (request.getVehicleName() != null && !request.getVehicleName().isBlank()) {
@@ -113,13 +113,12 @@ public class VehicleService {
         }
 
         vehicle = vehicleRepository.save(vehicle);
-        return VehicleDto.Response.fromEntity(vehicle);
+        return VehicleResponse.fromEntity(vehicle);
     }
 
     // ─── Acknowledge Service Done ─────────────────────────────────────────────
-
     @Transactional
-    public VehicleDto.Response acknowledgeService(Long id, VehicleDto.AcknowledgeServiceRequest request) {
+    public VehicleResponse acknowledgeService(Long id, AcknowledgeServiceRequest request) {
         Vehicle vehicle = findOrThrow(id);
 
         double newKm = request.getNewCurrentKilometers();
@@ -134,11 +133,10 @@ public class VehicleService {
         log.info("Service acknowledged for vehicle '{}'. Next service at {} km.",
                 vehicle.getVehicleName(), nextService);
 
-        return VehicleDto.Response.fromEntity(vehicle);
+        return VehicleResponse.fromEntity(vehicle);
     }
 
     // ─── Delete ───────────────────────────────────────────────────────────────
-
     @Transactional
     public void deleteVehicle(Long id) {
         if (!vehicleRepository.existsById(id)) {
@@ -148,7 +146,6 @@ public class VehicleService {
     }
 
     // ─── Scheduled Check ─────────────────────────────────────────────────────
-
     /**
      * Every hour, check for any vehicles that have reached their service interval
      * but haven't been notified yet.
@@ -165,7 +162,6 @@ public class VehicleService {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
-
     private void sendNotificationAndMark(Vehicle vehicle) {
         emailService.sendOilChangeReminder(vehicle);
         vehicle.setNotificationStatus(NotificationStatus.NOTIFIED);
@@ -178,4 +174,3 @@ public class VehicleService {
                 .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
     }
 }
-
