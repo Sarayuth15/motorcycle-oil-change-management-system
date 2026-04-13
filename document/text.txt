@@ -1,4 +1,4 @@
-### For backend
+### For backend .env
 # Database
 DB_USERNAME=root
 DB_PASSWORD=yuthMySQL$$168
@@ -12,5 +12,5 @@ MAIL_PASSWORD=bubfapmzwjqkqbag
 # CORS - set to your frontend URL in production
 CORS_ORIGINS=http://localhost:3000
 
-# Frontend
+# Frontend .env
 NEXT_PUBLIC_API_URL=http://localhost:8080
